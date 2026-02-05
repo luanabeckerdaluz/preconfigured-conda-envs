@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+dependencies:
+  # General
+  - gdal
+  - geos
+  - proj
+  - make
+  # Python
+  - python
+  - pip
+  - ipykernel
+  - rasterio
+  - numpy
+  - gdal
+  - pydantic

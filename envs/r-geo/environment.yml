@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+dependencies:
+  # R
+  - r-base
+  - r-essentials
+  - r-devtools
+  - r-remotes
