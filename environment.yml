@@ -1,0 +1,30 @@
+channels:
+  - conda-forge
+dependencies:
+  # General
+  - gdal
+  - geos
+  - proj
+  - make
+  # R
+  - r-base
+  - r-essentials
+  - r-devtools
+  - r-remotes
+  - r-sf
+  - r-terra
+  - r-raster
+  - r-proj
+  - r-tidyverse
+  - r-future.apply
+  - r-future
+  - r-reticulate
+  - r-pak
+  # Python
+  - python
+  - pip
+  - ipykernel
+  - rasterio
+  - numpy
+  - gdal
+  - pydantic
