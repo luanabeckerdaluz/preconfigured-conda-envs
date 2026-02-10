@@ -1,222 +1,262 @@
 #!/bin/bash
 
-set -euo  # Interrompe em caso de erro
+set -eu  # Interrompe em caso de erro
 
-# Configurações
-GITHUB_USERNAME=luanabeckerdaluz
-GITHUB_REPO=conda-geo-rpy
-GITHUB_BRANCH=main
-ENV_NAME=""
-LOCAL_ENV_NAME=""
-
+INITIAL_FOLDER=$(pwd)
+TEMP_DIR="/tmp/conda_env_$$"
 
 #============================================================
-# Validate input arguments
+# Functions
 #============================================================
 
-show_help() {
-    cat << EOF
-Usage: $0 [OPTIONS]
+clean_tmp_folder() {
+    echo "🧹 Cleaning temporary folder '${TEMP_DIR}"
+    rm -rf "$TEMP_DIR"
+    echo "✅ Temporary folder was removed!"
+}
 
-Configura um ambiente Conda para APSIM a partir do repositório GitHub.
-
-Opções:
-  -n, --name NAME            (REQUIRED) Remote env name 
-  -l, --local-name NAME      Local conda env name (Default: Remote env name)
-  -h, --help                 Show help
-
-Exemplos:
-  $0 -n r-geo
-  $0 -n r-geo -l my_local_r
-
-
-  # Ver se o nome do conda pode ter - ou tem que ser _
-  # Ver se o nome do conda pode ter - ou tem que ser _
-  # Ver se o nome do conda pode ter - ou tem que ser _
-  # Ver se o nome do conda pode ter - ou tem que ser _
-  # Ver se o nome do conda pode ter - ou tem que ser _
-  # Ver se o nome do conda pode ter - ou tem que ser _
-EOF
+aborting_installation() {
+    echo "❌ ERROR: Aborting installation!"
     exit 0
 }
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -n|--name)
-            ENV_NAME="$2"
-            shift 2
-            ;;
-        -l|--local-name)
-            LOCAL_ENV_NAME="$2"
-            shift 2
-            ;;
-        -h|--help)
-            show_help
-            ;;
-        *)
-            echo "❌ Opção desconhecida: $1"
-            show_help
-            exit 1
-            ;;
-    esac
-done
+activate_conda_env() {
+    # if '$1' INTERNAL ERROR
 
-# Validate variables
-if [ -z "$ENV_NAME" ]; then
-    echo "❌ Error: Env name (-n argument) is required!"
-    exit 1
-fi
-if [[ ! "$ENV_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    echo "❌ Erro: Nome do ambiente inválido: '$ENV_NAME'. Use apenas letras, números, hífens e underscores."
-    exit 1
-fi
-if [[ ! "$LOCAL_ENV_NAME" =~ ^[a-zA-Z0-9_-]+$ ]]; then
-    echo "❌ Erro: Nome do ambiente inválido: '$LOCAL_ENV_NAME'. Use apenas letras, números, hífens e underscores."
-    exit 1
-fi
+    echo "  🔧 Activating '$1' conda env..."
+    source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate $1
+    # Check if env was activated
+    if [ "$CONDA_DEFAULT_ENV" != "$1" ]; then
+        echo "❌ INTERNAL ERROR: Could not activate '$1' env. Please, contact support!";
+        aborting_installation
+    else
+        echo "  ✅ Conda env '$1' activated successfully!"
+    fi
+}
+
+deactivate_conda_env() {
+    echo "  🔧 Deactivating env..."
+    conda deactivate
+
+    if [ "$CONDA_DEFAULT_ENV" != "base" ]; then
+        echo "❌ INTERNAL ERROR: After deactivating, current env '${CONDA_DEFAULT_ENV}' is different from 'base' env!";
+        aborting_installation
+    fi
+}
+
+check_r_installation() {
+    if command -v R &> /dev/null; then
+        echo "  🔧 Checking R installation..."
+        echo "  $(R --version | head -n 1)"
+        # Instalar pacotes R adicionais se necessário
+        # (adicione aqui pacotes específicos)
+        echo "  ✅ R is installed!"
+        return 0;
+    else
+        echo "❌ ERROR: R is not installed!"
+        aborting_installation
+    fi
+}
+
+check_conda_installation() {
+    if ! command -v conda &> /dev/null; then
+        echo "❌ ERROR: Conda not found. Please, install miniconda!"
+        aborting_installation
+    fi
+}
+
+# Function to be triggered in case of any error
+clean() {
+    clean_tmp_folder
+    cd ${INITIAL_FOLDER}
+    aborting_installation
+}
+
+# Register function to run in case of any error
+trap clean ERR
+
 
 #============================================================
 # Check Conda installation
 #============================================================
+check_conda_installation
 
-if ! command -v conda &> /dev/null; then
-    echo "❌ Erro: Conda não encontrado. Instale o Anaconda/Miniconda primeiro."
-    exit 1
+
+#============================================================
+# User choose environment
+#============================================================
+
+# # TODO: 
+# 1) Instalação completa
+# 2) Registrar kernel Jupyter
+
+
+
+
+ENV_NAMES=("r-geo" "py-geo" "apsim")
+
+echo "Select the environment you want to install:"
+echo ""
+for i in "${!ENV_NAMES[@]}"; do
+    printf "  %d) %s\n" $((i+1)) "${ENV_NAMES[$i]}"
+done
+echo ""
+read -p "❓ Insert option: " choice
+
+# Validate
+if ! [[ "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#ENV_NAMES[@]}" ]; then aborting_installation; fi;
+
+# Get env name
+index=$((choice-1))
+ENV_NAME="${ENV_NAMES[$index]}"
+# Confirm
+read -p "❓ You chose '${ENV_NAME}'. Confirm installation? (y/n): " confirm
+if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
+
+# Check local env name
+read -p "❓ Name you conda env (default: '${ENV_NAME}'): " NEW_CONDA_ENV_NAME
+# Update ENV_NAME if user chose a new name 
+if [ ! -z "$NEW_CONDA_ENV_NAME" ]; then
+    ENV_NAME=$NEW_CONDA_ENV_NAME
+    
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+    ## NOVO NOME PRECISA CHECAR
+
+    # Confirm
+    read -p "❓ You named your conda env as '${NEW_CONDA_ENV_NAME}'. Confirm? (y/n): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
 fi
 
 
-# ENV_FILE = ????
-REPO_URL="https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}"
-# echo "🔧 Configurando ambiente '${ENV_NAME}'..."
-# ENV_URL="${REPO_URL}/${ENV_FILE}"
+#============================================================
+# Check if env already exists
+#============================================================
+
+echo "..."
+# echo "🔧 Checking if env '${ENV_NAME}' already exists..."
+if conda env list | grep -q "^${ENV_NAME}\s"; then
+    echo "❌ ERROR: Conda environment '${ENV_NAME}' already exists! Please, remove it manually before continue using 'conda env remove --name ${ENV_NAME} -y'."
+    aborting_installation
+fi
+
+#============================================================
+# Create tmp folder
+#============================================================
+
+# Create tmp folder
+mkdir -p "${TEMP_DIR}"
 
 
+#============================================================
+# Download remote files
+#============================================================
 
+echo "📥 Downloading required files..."
 
-
-echo "📦 Configurando ambiente: $ENV_NAME"
-echo "📁 Pasta no repositório: envs/$ENV_FOLDER"
-
-# Lista de arquivos possíveis (environment.yml sempre primeiro)
+# Possible files inside env folders
 FILES=(
     "environment.yml"
     "install.R"
 )
 
+REPO_ENV_URL="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/$ENV_NAME"
+
 download_if_exists() {
     local file="$1"
-    local url="$REPO_URL/envs/$ENV_FOLDER/$file"
+    local url="$REPO_ENV_URL/$file"
     
-    # Verificar se o arquivo existe (cabeçalho HTTP 200)
-    if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200 OK"; then
-        echo "  ✓ Baixando $file..."
+    # echo "  DEBUG URL: $url"
+    if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200"; then
+        echo "  📥 Downloading $file..."
         curl -s -L -o "$file" "$url"
         return 0
     else
-        echo "  ✗ $file não encontrado (pulando)"
         return 1
     fi
 }
 
-# Criar diretório temporário
-TEMP_DIR="/tmp/conda_env_$$"
-mkdir -p "$TEMP_DIR"
-cd "$TEMP_DIR"
-
-echo ""
-echo "📥 Baixando arquivos..."
-
+# Create temporary dir and download required files
+cd "${TEMP_DIR}"
 if ! download_if_exists "environment.yml"; then
-    echo "❌ ERRO: environment.yml não encontrado em envs/$ENV_FOLDER/"
-    echo "   Verifique se a pasta existe no repositório."
-    rm -rf "$TEMP_DIR"
+    echo "❌ INTERNAL ERROR: environment.yml file not found. Please, contact support!"
+    rm -rf "${TEMP_DIR}"
     exit 1
 fi
-
-for file in "${FILES[@]:1}"; do  # Pula o primeiro (environment.yml)
+for file in "${FILES[@]:1}"; do  # Skip first (environment.yml)
     download_if_exists "$file" || true
 done
 
+echo "✅ The files were downloaded successfully!"
+echo "..."
+
+
+#============================================================
+# Create environment
+#============================================================
+
+# Create env based on environment.yml file
+echo "🔧 Creating env '${ENV_NAME}'..."
+
+# sleep 2
+conda env create -f ${TEMP_DIR}/environment.yml -n "$ENV_NAME"
+
+# Check if conda env was created successfully
+if conda env list | grep -q "^${ENV_NAME}\s"; then
+    echo "✅ Conda env '${ENV_NAME}' was created successfully!"
+else 
+    echo "❌ ERROR: Could not create Conda environment '${ENV_NAME}'!"
+    aborting_installation
+fi
+echo "..."
+
+
+# # TODO: Register as Jupyter Kernel?
+# python3 -m ipykernel install --name rapsimx --prefix=$ENV_NAME --display-name=$ENV_NAME
+# Rscript -e "options(warn=2); IRkernel::installspec(name = 'rgeo', displayname = 'R APSIMx')"
 
 
 
+#============================================================
+# Install R dependencies
+#============================================================
 
-# #============================================================
-# # Check if env already exists
-# #============================================================
+if [[ -f "${TEMP_DIR}/install.R" ]]; then
+    echo "🔧 Since this env depends on a 'install.R' file, I will activate the environment and run it!"
 
-# echo "🔧 Verificando se o ambiente '${ENV_NAME}' já existe..."
-# if conda env list | grep -q "^$ENV_NAME\s"; then
-#     echo "❌ Erro: O ambiente '${ENV_NAME}' já existe! Por favor, remova ele ou defina outro nome para o seu ambiente."
-#     exit 1
-# fi
-
-# #============================================================
-# # Create environment
-# #============================================================
-
-# # Baixar o environment.yml do repositório
-# echo "🔧 Baixando ${ENV_FILE}..."
-# curl -s -L -o /tmp/environment.yml "${ENV_URL}"
-# if [ ! -f /tmp/environment.yml ]; then
-#     echo "❌ Erro: Não foi possível baixar o ou arquivo environment está inválido."
-#     echo "URL tentada: ${ENV_URL}"
-#     exit 1
-# fi
-# echo "✅ Arquivo ${ENV_FILE} baixado com sucesso!"
-
-# # Criar ambiente a partir do arquivo
-# echo "🔧 Criando ambiente '$ENV_NAME'"
-# conda env create -f /tmp/environment.yml -n "$ENV_NAME"
-# echo "✅ Ambiente '${ENV_NAME}' criado!"
-
-
-# # # Função para ativar o ambiente (compatível com diferentes shells)
-# # activate_env() {
-# #     # Tenta diferentes métodos de ativação
-# #     if [ -n "$BASH_VERSION" ]; then
-# #         source "$(conda info --base)/etc/profile.d/conda.sh"
-# #     elif [ -n "$ZSH_VERSION" ]; then
-# #         source "$(conda info --base)/etc/profile.d/conda.sh"
-# #     fi
-# #     conda activate "$ENV_NAME"
-# # }
-
-# echo "🔧 Ativando ambiente..."
-# source "$(conda info --base)/etc/profile.d/conda.sh"
-# conda activate "$ENV_NAME"
-# # Verificar se o ambiente foi ativado
-# if [ "$CONDA_DEFAULT_ENV" != "$ENV_NAME" ]; then
-#     echo "Aviso: Ambiente não ativado automaticamente."
-#     echo "Por favor, execute manualmente: conda activate $ENV_NAME"
-#     exit 1
-# else
-#     echo "✅ Ambiente $ENV_NAME ativado com sucesso!"
-# fi
-
-# # Verificar instalação do R (se aplicável)
-# if command -v R &> /dev/null; then
-#     echo "🔧 Verificando instalação do R..."
-#     R --version | head -n 1
+    # Activate env
+    activate_conda_env ${ENV_NAME}
     
-#     # Instalar pacotes R adicionais se necessário
-#     # (adicione aqui pacotes específicos)
-# fi
-# echo "✅ R está instalado!"
+    # Check if R is installed
+    check_r_installation
 
-# echo "🔧 Desativando ambiente..."
-# conda deactivate
-# echo "✅ Ambiente desativado!"
+    echo "  🔧 Running R script 'install.R'..."
+    echo "   ..."
+    Rscript ${TEMP_DIR}/install.R
+    echo "   ..."
+    
+    # Deactivate env
+    deactivate_conda_env
+fi
+echo "..."
 
-# # Limpar arquivo temporário
-# echo "🔧 Limpando arquivos temporários..."
-# rm -f /tmp/environment.yml
-# echo "✅ Arquivos temporários foram limpos!"
 
-# echo "====================================================="
-# echo "ℹ️  Ambiente ${ENV_NAME} configurado com sucesso!"
-# echo "ℹ️  Para desativar: 'conda deactivate'"
-# echo "ℹ️  Para ativar: 'conda activate $ENV_NAME'"
-# echo "ℹ️  Para remover: 'conda env remove -n $ENV_NAME'"
-# echo "====================================================="
+# Clean temporary files
+clean_tmp_folder
+echo "..."
+    
+
+# Final instructions
+cd ${INITIAL_FOLDER}
+echo "====================================================="
+echo "ℹ️  Conda env ${ENV_NAME} configured successfully!"
+echo "ℹ️  To deactivate: 'conda deactivate'"
+echo "ℹ️  To activate: 'conda activate $ENV_NAME'"
+echo "ℹ️  To remove: 'conda env remove -n $ENV_NAME -y'"
+echo "====================================================="
