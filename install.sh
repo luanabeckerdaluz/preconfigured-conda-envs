@@ -3,11 +3,40 @@
 set -eu  # Interrompe em caso de erro
 
 INITIAL_FOLDER=$(pwd)
+
+#============================================================
+# Constants
+#============================================================
+
+# Env temporary folder
 TEMP_DIR="/tmp/conda_env_$$"
+
+# Possible files inside remote env folders
+REMOTE_ENV_FILES=("environment.yml" "install.R")
+
+# Available envs
+ENV_NAMES=("r-geo" "py-geo" "apsim")
+
 
 #============================================================
 # Functions
 #============================================================
+
+download_if_exists() {
+    REPO_ENV_URL="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/$ENV_NAME"
+
+    local file="$1"
+    local url="$REPO_ENV_URL/$file"
+    
+    # echo "  DEBUG URL: $url"
+    if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200"; then
+        echo "  📥 Downloading $file..."
+        curl -s -L -o "$file" "$url"
+        return 0
+    else
+        return 1
+    fi
+}
 
 clean_tmp_folder() {
     echo "🧹 Cleaning temporary folder '${TEMP_DIR}..."
@@ -29,9 +58,9 @@ activate_conda_env() {
     if [ "$CONDA_DEFAULT_ENV" != "$1" ]; then
         echo "❌ INTERNAL ERROR: Could not activate '$1' env. Please, contact support!";
         aborting_installation
-    else
-        echo "  ✅ Conda env '$1' activated successfully!"
     fi
+    # else
+        # echo "  ✅ Conda env '$1' activated successfully!"
 }
 
 deactivate_conda_env() {
@@ -92,8 +121,6 @@ check_conda_installation
 
 
 
-
-ENV_NAMES=("r-geo" "py-geo" "apsim")
 
 echo "Select the environment you want to install:"
 echo ""
@@ -159,27 +186,6 @@ mkdir -p "${TEMP_DIR}"
 
 echo "📥 Downloading required files..."
 
-# Possible files inside env folders
-FILES=(
-    "environment.yml"
-    "install.R"
-)
-
-REPO_ENV_URL="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/$ENV_NAME"
-
-download_if_exists() {
-    local file="$1"
-    local url="$REPO_ENV_URL/$file"
-    
-    # echo "  DEBUG URL: $url"
-    if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200"; then
-        echo "  📥 Downloading $file..."
-        curl -s -L -o "$file" "$url"
-        return 0
-    else
-        return 1
-    fi
-}
 
 # Create temporary dir and download required files
 cd "${TEMP_DIR}"
@@ -188,7 +194,7 @@ if ! download_if_exists "environment.yml"; then
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
-for file in "${FILES[@]:1}"; do  # Skip first (environment.yml)
+for file in "${REMOTE_ENV_FILES[@]:1}"; do  # Skip first (environment.yml)
     download_if_exists "$file" || true
 done
 
