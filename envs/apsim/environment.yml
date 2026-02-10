@@ -1,9 +1,33 @@
 channels:
   - conda-forge
 dependencies:
-  # R
+  - python=3.11
+  - ipykernel
+  - salib
   - r-base
   - r-essentials
   - r-devtools
   - r-remotes
+  - r-tidyverse
+  - r-xslt
+  - r-ggrepel
+  - r-lhs
+  - r-gridextra
+  - r-doparallel
+  - r-xml
+  - r-rsqlite
+  - r-plogr
   - r-pak
+  - r-nloptr
+  - r-tictoc
+  - zlib
+  - r-lme4
+  - r-future.apply
+  - r-future
+  - r-xml2
+  - r-here
+  - r-png
+  - r-reticulate
+  - r-rcpptoml
+  - r-rjson
+  - r-stringr
