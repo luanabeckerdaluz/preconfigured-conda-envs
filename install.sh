@@ -10,9 +10,8 @@ TEMP_DIR="/tmp/conda_env_$$"
 #============================================================
 
 clean_tmp_folder() {
-    echo "🧹 Cleaning temporary folder '${TEMP_DIR}"
+    echo "🧹 Cleaning temporary folder '${TEMP_DIR}..."
     rm -rf "$TEMP_DIR"
-    echo "✅ Temporary folder was removed!"
 }
 
 aborting_installation() {
