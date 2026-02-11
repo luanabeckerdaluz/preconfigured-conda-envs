@@ -18,7 +18,7 @@ Setting up computational environments for scientific work often involves complex
 
 ---
 
-## 🚀 Quick start
+## 🚀 Quickstart
 
 ```bash
 bash <(wget --no-cache -qO- https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh)
@@ -27,5 +27,5 @@ bash <(wget --no-cache -qO- https://raw.githubusercontent.com/luanabeckerdaluz/p
 **📌 NOTE:**
 
 - ✅ Linux
-- 🚧 Windows: Not tested yet. This script will not run on **CMD/PowerShell**. It may work by running it using **Git Bash** or **WSL (Windows Subsystem for Linux)**.
-- 🚧 macOS: Not tested yet.
+- 🚧 Windows: Not tested yet. This script will not run on **CMD/PowerShell**. Please, try to run using **Git Bash** or **WSL (Windows Subsystem for Linux)**.
+- 🚧 macOS: Not tested yet. Please, install **wget** before running quickstart command.
