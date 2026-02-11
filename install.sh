@@ -49,18 +49,16 @@ aborting_installation() {
 }
 
 activate_conda_env() {
-    # if '$1' INTERNAL ERROR
+    local env_name="$1"
 
-    echo "  🔧 Activating '$1' conda env..."
-    source "$(conda info --base)/etc/profile.d/conda.sh"
-    conda activate $1
+    echo "  🔧 Activating '${env_name}' conda env..."
+    # source "$(conda info --base)/etc/profile.d/conda.sh"
+    conda activate ${env_name}
     # Check if env was activated
-    if [ "$CONDA_DEFAULT_ENV" != "$1" ]; then
-        echo "❌ INTERNAL ERROR: Could not activate '$1' env. Please, contact support!";
+    if [ "$CONDA_DEFAULT_ENV" != "${env_name}" ]; then
+        echo "❌ INTERNAL ERROR: Could not activate '${env_name}' env. Please, contact support!";
         aborting_installation
     fi
-    # else
-        # echo "  ✅ Conda env '$1' activated successfully!"
 }
 
 deactivate_conda_env() {
@@ -89,7 +87,7 @@ check_r_installation() {
 
 check_conda_installation() {
     if ! command -v conda &> /dev/null; then
-        echo "❌ ERROR: Conda not found. Please, install miniconda!"
+        echo "❌ ERROR: Conda not found. Please, install miniconda from 'https://www.anaconda.com/docs/getting-started/miniconda'!"
         aborting_installation
     fi
 }
@@ -115,12 +113,7 @@ check_conda_installation
 # User choose environment
 #============================================================
 
-# # TODO: 
-# 1) Instalação completa
-# 2) Registrar kernel Jupyter
-
-
-
+# TODO: Add options "Complete Installation" or "Only register kernel Jupyter" ?
 
 echo "Select the environment you want to install:"
 echo ""
@@ -145,20 +138,16 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
 read -p "❓ Name you conda env (default: '${ENV_NAME}'): " NEW_CONDA_ENV_NAME
 # Update ENV_NAME if user chose a new name 
 if [ ! -z "$NEW_CONDA_ENV_NAME" ]; then
-    ENV_NAME=$NEW_CONDA_ENV_NAME
-    
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
-    ## NOVO NOME PRECISA CHECAR
+    if [[ "$NEW_CONDA_ENV_NAME" =~ [/:#\ ] || "$NEW_CONDA_ENV_NAME" == "base" || "$NEW_CONDA_ENV_NAME" == "root" ]]; then
+        echo "❌ ERROR: Invalid environment name! Cannot be empty or contain / : # ' ' or be 'base'/'root'"
+        aborting_installation
+    fi
 
     # Confirm
     read -p "❓ You named your conda env as '${NEW_CONDA_ENV_NAME}'. Confirm? (y/n): " confirm
     if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
+    
+    ENV_NAME=$NEW_CONDA_ENV_NAME
 fi
 
 
@@ -220,6 +209,7 @@ else
     aborting_installation
 fi
 echo "..."
+
 
 
 # # TODO: Register as Jupyter Kernel?
