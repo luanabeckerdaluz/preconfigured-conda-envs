@@ -1,10 +1,31 @@
-# conda-geo-rpy
+# Conda preconfigured environments
 
-## 1. Install miniconda
+**One command. Full Conda environment!**
 
-https://www.anaconda.com/docs/getting-started/miniconda/install#linux-terminal-installer
+Setting up computational environments for scientific work often involves complex, error-prone manual steps — particularly when integrating R, Python, and system-level geospatial libraries. **This tool automates the process of creating pre-configured Conda environments, ensuring consistency across installations and eliminating hidden configuration issues.**
 
-## 2. Create conda environment
+**Choose the environment you need and a single terminal command does everything!**
 
-conda env create --name geo -f environment.yml
-conda activate geo
+---
+
+## 📦 Available environments
+
+| Environment | Description |
+|-------------|-------------|
+| **`r-geo`** | R with tidyverse, sf, terra, raster, and geospatial analysis packages |
+| **`py-geo`** | Python with geopandas, shapely, rasterio, pyproj and geospatial analysis packages |
+| **`apsim`** | R environment with apsimx, rapsimng, CroptimizR and Python SALib |
+
+---
+
+## 🚀 Quick start
+
+```bash
+script -q -c "bash <(curl -s https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/install.sh)" /dev/null
+```
+
+**📌 NOTE:**
+
+- ✅ Linux
+- 🚧 Windows: Not tested yet. This script will not run on **CMD/PowerShell**. It may work by running it using **Git Bash** or **WSL (Windows Subsystem for Linux)**.
+- 🚧 macOS: Not tested yet.
