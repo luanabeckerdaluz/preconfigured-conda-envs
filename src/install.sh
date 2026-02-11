@@ -2,8 +2,6 @@
 
 set -eu  # Interrompe em caso de erro
 
-INITIAL_FOLDER=$(pwd)
-
 #============================================================
 # Constants
 #============================================================
@@ -12,7 +10,7 @@ INITIAL_FOLDER=$(pwd)
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_ENV_FILES=("environment.yml" "r-packages-not-on-conda.yml")
+REMOTE_AVAILABLE_FILES=("environment.yml" "r-packages-not-on-conda.yml")
 
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim")
@@ -202,7 +200,7 @@ if ! download_if_exists "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR};
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
-for file in "${REMOTE_ENV_FILES[@]:1}"; do  # Skip first (environment.yml)
+for file in "${REMOTE_AVAILABLE_FILES[@]:1}"; do  # Skip first (environment.yml)
     download_if_exists "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
 done
 
