@@ -1,3 +1,6 @@
+
+#!/usr/bin/env Rscript
+
 #============================================================
 # Detect OS to set PAK repo
 #============================================================
@@ -7,7 +10,7 @@ sys <- Sys.info()["sysname"]
 arch <- Sys.info()["machine"]
 
 # Set fixed date
-CRAN_FIXED_DATE <- "2025-01-01"
+CRAN_FIXED_DATE <- "2026-02-10"
 
 # Set PAK remote URL based on current system
 repo <- switch(
@@ -21,6 +24,8 @@ repo <- switch(
     paste0('https://packagemanager.posit.co/cran/__linux__/jammy/', CRAN_FIXED_DATE)
   )
 )
+
+# install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
 
 cat(paste0(
   "====================================================================", "\n",
@@ -39,14 +44,28 @@ options(
 )
 
 #============================================================
+# Parse input parameters
+#============================================================
 
-pak::pkg_install(c(
-  'hol430/ApsimOnR@v1.0.59',        # GITHUB = Sep-2020
-  'SticsRPacks/CroPlotR@v1.0.0',    # GITHUB = Jan-2026
-  'SticsRPacks/SticsRFiles@v1.6.0', # GITHUB = Jun-2025
-  'SticsRPacks/SticsOnR@1.3.0',     # GITHUB = Mar-2025
-  'SticsRPacks/CroptimizR@v1.0.0',  # GITHUB = Jan-2025
-  'apsimx@2.8.235',                 # CRAN = Mar-2025
-  'rapsimng@0.4.6',                 # CRAN = Fev-2026
-  'BayesianTools@0.1.8'             # CRAN = Jan-2023
-))
+# Get arguments from command line
+args <- commandArgs(trailingOnly = TRUE)
+# Check input parameters
+if (length(args) < 1 || is.na(args[1]) || args[1] == "") {
+  print(paste("Temporary folder:", args[1]))
+  stop("❌ INTERNAL ERROR: Error when parsing temporary folder. Please, contact support!")
+}
+r_yml_requirements_filepath <- args[1]
+cat("📦 r_yml_requirements_filepath:", r_yml_requirements_filepath, "\n")
+
+
+#============================================================
+# Install R packages not available on conda
+#============================================================
+
+# Parse 'r-packages-not-on-conda.yml' file (No need to use 'yaml' package)
+lines <- readLines(r_yml_requirements_filepath, warn = FALSE)
+lines <- lines[lines != ""]
+pkgs <- gsub("^- ", "", lines)
+
+# Install packages using pak
+pak::pkg_install(pkgs)

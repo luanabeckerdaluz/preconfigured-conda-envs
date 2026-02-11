@@ -12,7 +12,7 @@ INITIAL_FOLDER=$(pwd)
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_ENV_FILES=("environment.yml" "install.R")
+REMOTE_ENV_FILES=("environment.yml" "r-packages-not-on-conda.yml")
 
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim")
@@ -22,23 +22,28 @@ GITHUB_USER=luanabeckerdaluz
 GITHUB_REPO=preconfigured-conda-envs
 GITHUB_BRANCH=main
 
-
 #============================================================
 # Functions
 #============================================================
 
+curl_without_cache() {
+    curl --no-keepalive --http1.1 \
+        -H 'Cache-Control: no-cache, no-store, must-revalidate' \
+        -H 'Pragma: no-cache' \
+        "$@"
+}
+
 download_if_exists() {
     # Input parameters
-    local remote_env_name="$1"
+    local remote_path="$1"
     local file="$2"
     local dest_dir="$3"
 
-    local url="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/envs/${remote_env_name}/${file}"
-    
-    # echo "  DEBUG URL: $url"
-    if curl -s -I "${url}" 2>/dev/null | head -n 1 | grep -q "200"; then
+    local url="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${remote_path}/${file}"
+
+    if curl_without_cache -s -I "${url}" 2>/dev/null | head -n 1 | grep -q "200"; then
         echo "  📥 Downloading ${file} into folder ${dest_dir}..."
-        curl -s -L -o "${dest_dir}/${file}" "${url}"
+        curl_without_cache -s -L -o "${dest_dir}/${file}" "${url}"
         return 0
     else
         return 1
@@ -192,13 +197,13 @@ mkdir -p "${TEMP_DIR}"
 echo "📥 Downloading required files..."
 
 # Create temporary dir and download required files
-if ! download_if_exists ${REMOTE_ENV_NAME} "environment.yml" ${TEMP_DIR}; then
+if ! download_if_exists "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR}; then
     echo "❌ INTERNAL ERROR: environment.yml file not found. Please, contact support!"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
 for file in "${REMOTE_ENV_FILES[@]:1}"; do  # Skip first (environment.yml)
-    download_if_exists ${REMOTE_ENV_NAME} $file ${TEMP_DIR} || true
+    download_if_exists "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
 done
 
 echo "✅ The files were downloaded successfully!"
@@ -236,8 +241,8 @@ echo "..."
 # Install R dependencies
 #============================================================
 
-if [[ -f "${TEMP_DIR}/install.R" ]]; then
-    echo "🔧 Since this env depends on a 'install.R' file, I will activate the environment and run it!"
+if [[ -f "${TEMP_DIR}/r-packages-not-on-conda.yml" ]]; then
+    echo "🔧 Since this env contains a 'r-packages-not-on-conda.yml' file containing R packages not available on Conda, I will activate the env and install these R packages!"
 
     # Activate env
     activate_conda_env ${ENV_NAME}
@@ -245,9 +250,13 @@ if [[ -f "${TEMP_DIR}/install.R" ]]; then
     # Check if R is installed
     check_r_installation
 
-    echo "  🔧 Running R script 'install.R'..."
     echo "   ..."
-    Rscript ${TEMP_DIR}/install.R
+    echo "  📥 Downloading 'install.R' script..."
+    download_if_exists "src" "install.R" ${TEMP_DIR}
+
+    echo "   ..."
+    echo "  🔧 Running script 'install.R'..."
+    Rscript ${TEMP_DIR}/install.R "${TEMP_DIR}/r-packages-not-on-conda.yml"
     echo "   ..."
     
     # Deactivate env
