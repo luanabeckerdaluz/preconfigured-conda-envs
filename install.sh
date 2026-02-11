@@ -125,6 +125,11 @@ check_conda_installation
 
 # TODO: Check if user want to also register Jupyter kernel
 
+# TODO: Create env from local files
+
+# TODO: Automate PAK remote URL
+
+
 echo "Select the environment you want to install:"
 echo ""
 for i in "${!ENV_NAMES[@]}"; do

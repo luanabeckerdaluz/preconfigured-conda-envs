@@ -41,12 +41,12 @@ options(
 #============================================================
 
 pak::pkg_install(c(
-    'hol430/ApsimOnR@v1.0.59',        # GITHUB = Sep-2020
-    'SticsRPacks/CroPlotR@v1.0.0',    # GITHUB = Jan-2026
-    'SticsRPacks/SticsRFiles@v1.6.0', # GITHUB = Jun-2025
-    'SticsRPacks/SticsOnR@1.3.0',     # GITHUB = Mar-2025
-    'SticsRPacks/CroptimizR@v1.0.0',  # GITHUB = Jan-2025
-    'apsimx@2.8.235',                 # CRAN = Mar-2025
-    'rapsimng@0.4.6',                 # CRAN = Fev-2026
-    'BayesianTools@0.1.8'             # CRAN = Jan-2023
+  'hol430/ApsimOnR@v1.0.59',        # GITHUB = Sep-2020
+  'SticsRPacks/CroPlotR@v1.0.0',    # GITHUB = Jan-2026
+  'SticsRPacks/SticsRFiles@v1.6.0', # GITHUB = Jun-2025
+  'SticsRPacks/SticsOnR@1.3.0',     # GITHUB = Mar-2025
+  'SticsRPacks/CroptimizR@v1.0.0',  # GITHUB = Jan-2025
+  'apsimx@2.8.235',                 # CRAN = Mar-2025
+  'rapsimng@0.4.6',                 # CRAN = Fev-2026
+  'BayesianTools@0.1.8'             # CRAN = Jan-2023
 ))
