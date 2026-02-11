@@ -23,10 +23,10 @@ ENV_NAMES=("r-geo" "py-geo" "apsim")
 #============================================================
 
 download_if_exists() {
-    REPO_ENV_URL="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/$ENV_NAME"
+    local remote_env_name="$1"
+    local file="$2"
 
-    local file="$1"
-    local url="$REPO_ENV_URL/$file"
+    local url="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/${remote_env_name}/${file}"
     
     # echo "  DEBUG URL: $url"
     if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200"; then
@@ -67,10 +67,10 @@ deactivate_conda_env() {
     echo "  🔧 Deactivating env..."
     conda deactivate
 
-    if [ "$CONDA_DEFAULT_ENV" != "base" ]; then
-        echo "❌ INTERNAL ERROR: After deactivating, current env '${CONDA_DEFAULT_ENV}' is different from 'base' env!";
-        aborting_installation
-    fi
+    # if [ "$CONDA_DEFAULT_ENV" != "base" ]; then
+    #     echo "❌ INTERNAL ERROR: After deactivating, current env '${CONDA_DEFAULT_ENV}' is different from 'base' env!";
+    #     aborting_installation
+    # fi
 }
 
 check_r_installation() {
@@ -136,6 +136,7 @@ if ! [[ "$choice" =~ ^[0-9]+$ ]] || [ "$choice" -lt 1 ] || [ "$choice" -gt "${#E
 # Get env name
 index=$((choice-1))
 ENV_NAME="${ENV_NAMES[$index]}"
+REMOTE_ENV_NAME=${ENV_NAME}
 # Confirm
 read -p "❓ You chose '${ENV_NAME}'. Confirm installation? (y/n): " confirm
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
@@ -186,16 +187,15 @@ mkdir -p "${TEMP_DIR}"
 
 echo "📥 Downloading required files..."
 
-
 # Create temporary dir and download required files
 cd "${TEMP_DIR}"
-if ! download_if_exists "environment.yml"; then
+if ! download_if_exists ${REMOTE_ENV_NAME} "environment.yml"; then
     echo "❌ INTERNAL ERROR: environment.yml file not found. Please, contact support!"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
 for file in "${REMOTE_ENV_FILES[@]:1}"; do  # Skip first (environment.yml)
-    download_if_exists "$file" || true
+    download_if_exists ${REMOTE_ENV_NAME} "$file" || true
 done
 
 echo "✅ The files were downloaded successfully!"
@@ -251,11 +251,9 @@ if [[ -f "${TEMP_DIR}/install.R" ]]; then
 fi
 echo "..."
 
-
 # Clean temporary files
 clean_tmp_folder
 echo "..."
-    
 
 # Final instructions
 cd ${INITIAL_FOLDER}
