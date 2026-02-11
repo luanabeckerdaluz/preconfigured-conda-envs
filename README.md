@@ -21,7 +21,7 @@ Setting up computational environments for scientific work often involves complex
 ## 🚀 Quick start
 
 ```bash
-script -q -c "bash <(curl -s https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/install.sh)" /dev/null
+script -q -c "bash <(curl -s https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/install.sh)" /dev/null
 ```
 
 **📌 NOTE:**

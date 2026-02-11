@@ -17,21 +17,28 @@ REMOTE_ENV_FILES=("environment.yml" "install.R")
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim")
 
+# Set GitHub variables
+GITHUB_USER=luanabeckerdaluz
+GITHUB_REPO=preconfigured-conda-envs
+GITHUB_BRANCH=main
+
 
 #============================================================
 # Functions
 #============================================================
 
 download_if_exists() {
+    # Input parameters
     local remote_env_name="$1"
     local file="$2"
+    local dest_dir="$3"
 
-    local url="https://raw.githubusercontent.com/luanabeckerdaluz/conda-geo-rpy/main/envs/${remote_env_name}/${file}"
+    local url="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/envs/${remote_env_name}/${file}"
     
     # echo "  DEBUG URL: $url"
-    if curl -s -I "$url" 2>/dev/null | head -n 1 | grep -q "200"; then
-        echo "  📥 Downloading $file..."
-        curl -s -L -o "$file" "$url"
+    if curl -s -I "${url}" 2>/dev/null | head -n 1 | grep -q "200"; then
+        echo "  📥 Downloading ${file} into folder ${dest_dir}..."
+        curl -s -L -o "${dest_dir}/${file}" "${url}"
         return 0
     else
         return 1
@@ -52,7 +59,7 @@ activate_conda_env() {
     local env_name="$1"
 
     echo "  🔧 Activating '${env_name}' conda env..."
-    # source "$(conda info --base)/etc/profile.d/conda.sh"
+    source "$(conda info --base)/etc/profile.d/conda.sh"
     conda activate ${env_name}
     # Check if env was activated
     if [ "$CONDA_DEFAULT_ENV" != "${env_name}" ]; then
@@ -95,7 +102,6 @@ check_conda_installation() {
 # Function to be triggered in case of any error
 clean() {
     clean_tmp_folder
-    cd ${INITIAL_FOLDER}
     aborting_installation
 }
 
@@ -108,12 +114,16 @@ trap clean ERR
 #============================================================
 check_conda_installation
 
+# TODO: Check if it is necessary to accept conda terms on first use:
+# conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+# conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+
 
 #============================================================
 # User choose environment
 #============================================================
 
-# TODO: Add options "Complete Installation" or "Only register kernel Jupyter" ?
+# TODO: Check if user want to also register Jupyter kernel
 
 echo "Select the environment you want to install:"
 echo ""
@@ -177,14 +187,13 @@ mkdir -p "${TEMP_DIR}"
 echo "📥 Downloading required files..."
 
 # Create temporary dir and download required files
-cd "${TEMP_DIR}"
-if ! download_if_exists ${REMOTE_ENV_NAME} "environment.yml"; then
+if ! download_if_exists ${REMOTE_ENV_NAME} "environment.yml" ${TEMP_DIR}; then
     echo "❌ INTERNAL ERROR: environment.yml file not found. Please, contact support!"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
 for file in "${REMOTE_ENV_FILES[@]:1}"; do  # Skip first (environment.yml)
-    download_if_exists ${REMOTE_ENV_NAME} "$file" || true
+    download_if_exists ${REMOTE_ENV_NAME} $file ${TEMP_DIR} || true
 done
 
 echo "✅ The files were downloaded successfully!"
@@ -212,7 +221,7 @@ echo "..."
 
 
 
-# # TODO: Register as Jupyter Kernel?
+# # TODO: Register Jupyter Kernel?
 # python3 -m ipykernel install --name rapsimx --prefix=$ENV_NAME --display-name=$ENV_NAME
 # Rscript -e "options(warn=2); IRkernel::installspec(name = 'rgeo', displayname = 'R APSIMx')"
 
@@ -246,7 +255,6 @@ clean_tmp_folder
 echo "..."
 
 # Final instructions
-cd ${INITIAL_FOLDER}
 echo "====================================================="
 echo "ℹ️  Conda env ${ENV_NAME} configured successfully!"
 echo "ℹ️  To deactivate: 'conda deactivate'"
