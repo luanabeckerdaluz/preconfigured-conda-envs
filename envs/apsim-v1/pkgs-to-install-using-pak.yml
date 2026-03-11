@@ -3,6 +3,6 @@
 - BayesianTools@0.1.8
 - SticsRPacks/SticsRFiles@v1.6.0
 - SticsRPacks/SticsOnR@1.3.0
-- SticsRPacks/CroPlotR@v1.0.0
+- SticsRPacks/CroPlotR@*release
 - SticsRPacks/CroptimizR@v1.0.0
 - hol430/ApsimOnR@v1.0.59

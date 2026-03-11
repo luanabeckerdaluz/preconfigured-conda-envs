@@ -3,6 +3,28 @@
 set -eu  # Interrompe em caso de erro
 
 #============================================================
+# Input parameters
+#============================================================
+
+error_message() {
+    local msg="$1"
+    echo "❌ ERROR: ${msg}!"
+}
+
+# Install from local folder or remote URLs
+USE_LOCAL_OR_REMOTE_FILES="remote"
+
+if [ $# -eq 1 ]; then
+    if [ "$1" = "--local" ]; then
+        USE_LOCAL_OR_REMOTE_FILES="local" 
+        echo "🔧 Installing Using local files..."
+    else
+        error_message "The only available parameter to set is '--local'"
+        exit 1
+    fi
+fi
+
+#============================================================
 # Constants
 #============================================================
 
@@ -10,7 +32,7 @@ set -eu  # Interrompe em caso de erro
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml", "config")
+REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "config")
 
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim-v1", "apsim-debian-bullseye")
@@ -24,27 +46,33 @@ GITHUB_BRANCH=main
 # Functions
 #============================================================
 
-curl_without_cache() {
-    curl --no-keepalive --http1.1 \
-        -H 'Cache-Control: no-cache, no-store, must-revalidate' \
-        -H 'Pragma: no-cache' \
-        "$@"
-}
-
-download_if_exists() {
+retrieve_file() {
     # Input parameters
-    local remote_path="$1"
+    local env_path_from_root="$1"
     local file="$2"
     local dest_dir="$3"
 
-    local url="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${remote_path}/${file}"
-
-    if curl_without_cache -s -I "${url}" 2>/dev/null | head -n 1 | grep -q "200"; then
-        echo "  📥 Downloading ${file} into folder ${dest_dir}..."
-        curl_without_cache -s -L -o "${dest_dir}/${file}" "${url}"
-        return 0
+    # If using local files, copy local files to temp dir
+    if [ "$USE_LOCAL_OR_REMOTE_FILES" = "local" ]; then
+        cp ../${env_path_from_root}/${file} ${dest_dir}
+    # If using remote files, download files from GitHub
     else
-        return 1
+        curl_without_cache() {
+            curl --no-keepalive --http1.1 \
+                -H 'Cache-Control: no-cache, no-store, must-revalidate' \
+                -H 'Pragma: no-cache' \
+                "$@"
+        }
+
+        local url="https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${env_path_from_root}/${file}"
+
+        if curl_without_cache -s -I "${url}" 2>/dev/null | head -n 1 | grep -q "200"; then
+            echo "  📥 Downloading ${file} into folder ${dest_dir}..."
+            curl_without_cache -s -L -o "${dest_dir}/${file}" "${url}"
+            return 0
+        else
+            return 1
+        fi
     fi
 }
 
@@ -54,7 +82,7 @@ clean_tmp_folder() {
 }
 
 aborting_installation() {
-    echo "❌ ERROR: Aborting installation!"
+    error_message "Aborting installation"
     exit 0
 }
 
@@ -66,7 +94,7 @@ activate_conda_env() {
     conda activate ${env_name}
     # Check if env was activated
     if [ "$CONDA_DEFAULT_ENV" != "${env_name}" ]; then
-        echo "❌ INTERNAL ERROR: Could not activate '${env_name}' env. Please, contact support!";
+        error_message "Could not activate '${env_name}' env. Please, contact support"
         aborting_installation
     fi
 }
@@ -90,21 +118,21 @@ check_r_installation() {
         echo "  ✅ R is installed!"
         return 0;
     else
-        echo "❌ ERROR: R is not installed!"
+        error_message "R is not installed"
         aborting_installation
     fi
 }
 
 check_conda_installation() {
     if ! command -v conda &> /dev/null; then
-        echo "❌ ERROR: Conda not found. Please, install miniconda from 'https://www.anaconda.com/docs/getting-started/miniconda'!"
+        error_message "Conda not found. Please, install miniconda from 'https://www.anaconda.com/docs/getting-started/miniconda'"
         aborting_installation
     fi
 }
 
 check_curl_installation() {
     if ! command -v curl &> /dev/null; then
-        echo "❌ ERROR: curl not found. Please, install curl from apt or conda!"
+        error_message "curl not found. Please, install curl from apt or conda"
         aborting_installation
     fi
 }
@@ -165,7 +193,7 @@ read -p "❓ Name you conda env (default: '${ENV_NAME}'): " NEW_CONDA_ENV_NAME
 # Update ENV_NAME if user chose a new name 
 if [ ! -z "$NEW_CONDA_ENV_NAME" ]; then
     if [[ "$NEW_CONDA_ENV_NAME" =~ [/:#\ ] || "$NEW_CONDA_ENV_NAME" == "base" || "$NEW_CONDA_ENV_NAME" == "root" ]]; then
-        echo "❌ ERROR: Invalid environment name! Cannot be empty or contain / : # ' ' or be 'base'/'root'"
+        error_message "Invalid environment name! Cannot be empty or contain / : # ' ' or be 'base'/'root'"
         aborting_installation
     fi
 
@@ -184,7 +212,7 @@ fi
 echo "..."
 # echo "🔧 Checking if env '${ENV_NAME}' already exists..."
 if conda env list | grep -q "^${ENV_NAME}\s"; then
-    echo "❌ ERROR: Conda environment '${ENV_NAME}' already exists! Please, remove it manually before continue using 'conda env remove --name ${ENV_NAME} -y'."
+    error_message "Conda environment '${ENV_NAME}' already exists! Please, remove it manually before continue using 'conda env remove --name ${ENV_NAME} -y'"
     aborting_installation
 fi
 
@@ -197,19 +225,19 @@ mkdir -p "${TEMP_DIR}"
 
 
 #============================================================
-# Download remote files
+# Download remote files or copy local files
 #============================================================
 
-echo "📥 Downloading required files..."
+echo "📥 Retrieving required files..."
 
-# Create temporary dir and download required files
-if ! download_if_exists "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR}; then
-    echo "❌ INTERNAL ERROR: environment.yml file not found. Please, contact support!"
+# Create temporary dir and download/copy required files
+if ! retrieve_file "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR}; then
+    error_message "environment.yml file not found. Please, contact support"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
 for file in "${REMOTE_AVAILABLE_FILES[@]:1}"; do  # Skip first (environment.yml)
-    download_if_exists "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
+    retrieve_file "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
 done
 
 echo "✅ The files were downloaded successfully!"
@@ -230,7 +258,7 @@ conda env create -f ${TEMP_DIR}/environment.yml -n "$ENV_NAME"
 if conda env list | grep -q "^${ENV_NAME}\s"; then
     echo "✅ Conda env '${ENV_NAME}' was created successfully!"
 else 
-    echo "❌ ERROR: Could not create Conda environment '${ENV_NAME}'!"
+    error_message "Could not create Conda environment '${ENV_NAME}'"
     aborting_installation
 fi
 echo "..."
@@ -261,12 +289,12 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
     # ... package from source.
     if grep -q "installation_mode=2" ${TEMP_DIR}/config; then
         echo "This environment requires to install R pak from source. Installing..."
-        Rscript -e 'install.packages("pak", type = "source")'
+        Rscript -e 'install.packages("pak", repos = "https://cloud.r-project.org")'
     fi
 
     echo "   ..."
-    echo "  📥 Downloading 'install.R' script..."
-    download_if_exists "src" "install.R" ${TEMP_DIR}
+    echo "  📥 Retrieving 'install.R' script..."
+    retrieve_file "src" "install.R" ${TEMP_DIR}
 
     echo "   ..."
     echo "  🔧 Running script 'install.R'..."
