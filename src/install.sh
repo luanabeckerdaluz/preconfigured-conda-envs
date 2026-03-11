@@ -102,6 +102,13 @@ check_conda_installation() {
     fi
 }
 
+check_curl_installation() {
+    if ! command -v curl &> /dev/null; then
+        echo "❌ ERROR: curl not found. Please, install curl from apt or conda!"
+        aborting_installation
+    fi
+}
+
 # Function to be triggered in case of any error
 clean() {
     clean_tmp_folder
@@ -113,9 +120,10 @@ trap clean ERR
 
 
 #============================================================
-# Check Conda installation
+# Check pre requisites
 #============================================================
 check_conda_installation
+check_curl_installation
 
 # TODO: Check if it is necessary to accept conda terms on first use:
 # conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
