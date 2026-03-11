@@ -10,10 +10,10 @@ set -eu  # Interrompe em caso de erro
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml")
+REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml", "config")
 
 # Available envs
-ENV_NAMES=("r-geo" "py-geo" "apsim-v1")
+ENV_NAMES=("r-geo" "py-geo" "apsim-v1", "apsim-debian-bullseye")
 
 # Set GitHub variables
 GITHUB_USER=luanabeckerdaluz
@@ -255,6 +255,14 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
     
     # Check if R is installed
     check_r_installation
+
+    # Since this env has R packages to be installed using pak, we need to
+    # ... open "config" file downloaded to check if we need to install "pak"
+    # ... package from source.
+    if grep -q "installation_mode=2" ${TEMP_DIR}/config; then
+        echo "This environment requires to install R pak from source. Installing..."
+        Rscript -e 'install.packages("pak", type = "source")'
+    fi
 
     echo "   ..."
     echo "  📥 Downloading 'install.R' script..."

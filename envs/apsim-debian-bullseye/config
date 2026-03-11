@@ -1,0 +1,5 @@
+# installation_mode:
+# 1) Install "environment.yml" packages from conda, including "pak", then use "pak" inside R to install other packages defined inside "pkgs-to-install-using-pak.yml" file
+# 2) Install "environment.yml" packages from conda, without "pak" and other R packages, then install "pak" from source, then use "pak" inside R to install all R packages defined inside "pkgs-to-install-using-pak.yml" file
+
+installation_mode=2
