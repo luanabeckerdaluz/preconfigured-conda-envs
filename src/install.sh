@@ -10,10 +10,10 @@ set -eu  # Interrompe em caso de erro
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_AVAILABLE_FILES=("environment.yml" "r-packages-not-on-conda.yml")
+REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml")
 
 # Available envs
-ENV_NAMES=("r-geo" "py-geo" "apsim")
+ENV_NAMES=("r-geo" "py-geo" "apsim-v1")
 
 # Set GitHub variables
 GITHUB_USER=luanabeckerdaluz
@@ -247,8 +247,8 @@ echo "..."
 # Install R dependencies
 #============================================================
 
-if [[ -f "${TEMP_DIR}/r-packages-not-on-conda.yml" ]]; then
-    echo "🔧 Since this env contains a 'r-packages-not-on-conda.yml' file containing R packages not available on Conda, I will activate the env and install these R packages!"
+if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
+    echo "🔧 Since this env contains a 'pkgs-to-install-using-pak.yml' file containing R packages not available on Conda, I will activate the env and install these R packages!"
 
     # Activate env
     activate_conda_env ${ENV_NAME}
@@ -262,7 +262,7 @@ if [[ -f "${TEMP_DIR}/r-packages-not-on-conda.yml" ]]; then
 
     echo "   ..."
     echo "  🔧 Running script 'install.R'..."
-    Rscript ${TEMP_DIR}/install.R "${TEMP_DIR}/r-packages-not-on-conda.yml"
+    Rscript ${TEMP_DIR}/install.R "${TEMP_DIR}/pkgs-to-install-using-pak.yml"
     echo "   ..."
     
     # Deactivate env
