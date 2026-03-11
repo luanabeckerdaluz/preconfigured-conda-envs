@@ -24,6 +24,13 @@ Setting up computational environments for scientific work often involves complex
 bash <(wget --no-cache -qO- https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh)
 ```
 
+if you are running locally, please use the following command:
+
+```bash
+cd src/
+install.sh --local
+```
+
 **📌 NOTE:**
 
 - ✅ Linux
