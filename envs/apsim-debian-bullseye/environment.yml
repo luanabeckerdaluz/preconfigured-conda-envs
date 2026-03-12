@@ -1,6 +1,17 @@
 channels:
   - conda-forge
 dependencies:
+  - cmake
+  - libcurl
+  - openssl
+  - fontconfig
+  - libfreetype6
+  - fribidi
+  - libgit2
+  - harfbuzz
+  - xorg-libx11
+  - libxslt
+  - pandoc
   - python=3.11.14
   - ipykernel=7.2.0
   - salib=1.5.2
