@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.6
+VERSION=1.0.7
 
 #============================================================
 # Input parameters
@@ -317,7 +317,7 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
         
         echo "   ..."
         echo "  🔧 Running sh script before install R packages from source..."
-        .${TEMP_DIR}/run-before-install-from-source.sh
+        source ${TEMP_DIR}/run-before-install-from-source.sh
         echo "   ..."
 
         echo "   ..."
