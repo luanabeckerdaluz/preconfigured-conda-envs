@@ -2,6 +2,8 @@
 
 set -eu  # Interrompe em caso de erro
 
+VERSION=1.0.0
+
 #============================================================
 # Input parameters
 #============================================================
@@ -14,15 +16,24 @@ error_message() {
 # Install from local folder or remote URLs
 USE_LOCAL_OR_REMOTE_FILES="remote"
 
-if [ $# -eq 1 ]; then
-    if [ "$1" = "--local" ]; then
-        USE_LOCAL_OR_REMOTE_FILES="local" 
-        echo "🔧 Installing Using local files..."
-    else
-        error_message "The only available parameter to set is '--local'"
-        exit 1
-    fi
-fi
+# Processar argumentos
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -l|--local)
+            USE_LOCAL_OR_REMOTE_FILES="local" 
+            echo "🔧 Installing Using local files..."
+            ;;
+        -v|--version)
+            echo "preconfigured-conda-envs | Version: $VERSION"
+            exit 0
+            ;;
+        *)
+            error_message "Invalid parameter! Available parameters are --local and --version"
+            exit 1
+            ;;
+    esac
+    shift
+done
 
 #============================================================
 # Constants
@@ -169,6 +180,9 @@ check_curl_installation
 # TODO: Automate PAK remote URL
 
 
+echo "-----------------------------------------"
+echo "preconfigured-conda-envs | Version: $VERSION"
+echo "-----------------------------------------"
 echo "Select the environment you want to install:"
 echo ""
 for i in "${!ENV_NAMES[@]}"; do
