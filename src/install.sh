@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.2
+VERSION=1.0.3
 
 #============================================================
 # Input parameters
@@ -305,8 +305,9 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
     # Activate env
     activate_conda_env ${ENV_NAME}
 
-    # Configure LD_LIBRARY_PATH and restart env
+    # Configure LD_LIBRARY_PATH and PKG_CONFIG_PATH and restart env
     conda env config vars set LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+    conda env config vars set PKG_CONFIG_PATH=$CONDA_PREFIX/lib/pkgconfig
     deactivate_conda_env
     activate_conda_env ${ENV_NAME}
     
