@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.4
+VERSION=1.0.5
 
 #============================================================
 # Input parameters
@@ -261,7 +261,7 @@ done
 
 # Download/copy tool scripts
 for file in "${TOOL_AVAILABLE_SCRIPTS[@]}"; do
-    retrieve_file "src/" $file ${TEMP_DIR} || true
+    retrieve_file "src" $file ${TEMP_DIR} || true
 done
 echo "✅ Env files and tool scripts retrieved successfully!"
 echo "..."
