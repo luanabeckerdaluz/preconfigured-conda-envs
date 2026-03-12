@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.1
+VERSION=1.0.2
 
 #============================================================
 # Input parameters
@@ -42,8 +42,11 @@ done
 # Env temporary folder
 TEMP_DIR="/tmp/conda_env_$$"
 
-# Possible files inside remote env folders
-REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config")
+# Envs files (not all are required)
+ENV_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config")
+
+# Tool scripts
+TOOL_AVAILABLE_SCRIPTS=("install_pak.R" "install_source.R")
 
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim-v1", "apsim-debian-bullseye")
@@ -234,7 +237,8 @@ fi
 # Create tmp folder
 #============================================================
 
-# Create tmp folder
+# Create temporary folder where tool scripts and env 
+# ...files will be placed
 mkdir -p "${TEMP_DIR}"
 
 
@@ -242,19 +246,25 @@ mkdir -p "${TEMP_DIR}"
 # Download remote files or copy local files
 #============================================================
 
-echo "📥 Retrieving required files..."
+echo "📥 Retrieving env files and tool scripts..."
 
-# Create temporary dir and download/copy required files
+# Download/copy required files
 if ! retrieve_file "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR}; then
     error_message "environment.yml file not found. Please, contact support"
     rm -rf "${TEMP_DIR}"
     exit 1
 fi
-for file in "${REMOTE_AVAILABLE_FILES[@]:1}"; do  # Skip first (environment.yml)
+for file in "${ENV_AVAILABLE_FILES[@]:1}"; do  # Skip first (environment.yml)
     retrieve_file "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
 done
+echo "✅ Env files retrieved successfully!"
+echo "..."
 
-echo "✅ The files were downloaded successfully!"
+
+for file in "${TOOL_AVAILABLE_SCRIPTS[@]}"; do
+    retrieve_file "src/" $file ${TEMP_DIR} || true
+done
+echo "✅ Tool scripts retrieved successfully!"
 echo "..."
 
 
@@ -310,18 +320,10 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
         echo "This environment requires to install some packages from source. Installing..."
         
         echo "   ..."
-        echo "  📥 Retrieving 'install_source.R' script..."
-        retrieve_file "src" "install_source.R" ${TEMP_DIR}
-
-        echo "   ..."
         echo "  🔧 Running script 'install_source.R'..."
         Rscript ${TEMP_DIR}/install_source.R "${TEMP_DIR}/pkgs-to-install-from-source.yml"
         echo "   ..."
     fi
-
-    echo "   ..."
-    echo "  📥 Retrieving 'install_pak.R' script..."
-    retrieve_file "src" "install_pak.R" ${TEMP_DIR}
 
     echo "   ..."
     echo "  🔧 Running script 'install_pak.R'..."
