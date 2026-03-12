@@ -62,6 +62,8 @@ if (length(args) < 1 || is.na(args[1]) || args[1] == "") {
 r_yml_requirements_filepath <- args[1]
 cat("📦 r_yml_requirements_filepath:", r_yml_requirements_filepath, "\n")
 
+# r_yml_requirements_filepath <- file.path(getwd(), "pkgs-to-install-using-pak.yml")
+
 #============================================================
 # Parse packages list
 #============================================================

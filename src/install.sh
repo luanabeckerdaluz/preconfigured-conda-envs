@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.7
+VERSION=1.0.8
 
 #============================================================
 # Input parameters
