@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.3
+VERSION=1.0.4
 
 #============================================================
 # Input parameters
@@ -68,6 +68,7 @@ retrieve_file() {
 
     # If using local files, copy local files to temp dir
     if [ "$USE_LOCAL_OR_REMOTE_FILES" = "local" ]; then
+        echo "  📥 Copying ${file} to folder ${dest_dir}..."
         cp ../${env_path_from_root}/${file} ${dest_dir}
     # If using remote files, download files from GitHub
     else
@@ -248,7 +249,7 @@ mkdir -p "${TEMP_DIR}"
 
 echo "📥 Retrieving env files and tool scripts..."
 
-# Download/copy required files
+# Download/copy env files
 if ! retrieve_file "envs/${REMOTE_ENV_NAME}" "environment.yml" ${TEMP_DIR}; then
     error_message "environment.yml file not found. Please, contact support"
     rm -rf "${TEMP_DIR}"
@@ -257,14 +258,12 @@ fi
 for file in "${ENV_AVAILABLE_FILES[@]:1}"; do  # Skip first (environment.yml)
     retrieve_file "envs/${REMOTE_ENV_NAME}" $file ${TEMP_DIR} || true
 done
-echo "✅ Env files retrieved successfully!"
-echo "..."
 
-
+# Download/copy tool scripts
 for file in "${TOOL_AVAILABLE_SCRIPTS[@]}"; do
     retrieve_file "src/" $file ${TEMP_DIR} || true
 done
-echo "✅ Tool scripts retrieved successfully!"
+echo "✅ Env files and tool scripts retrieved successfully!"
 echo "..."
 
 
