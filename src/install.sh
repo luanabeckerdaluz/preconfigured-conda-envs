@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.8
+VERSION=1.0.9
 
 #============================================================
 # Input parameters
@@ -43,7 +43,7 @@ done
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Envs files (not all are required)
-ENV_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config" "run-before-install-from-source.sh")
+ENV_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml")
 
 # Tool scripts
 TOOL_AVAILABLE_SCRIPTS=("install_pak.R" "install_source.R")
@@ -294,43 +294,41 @@ echo "..."
 # Install R dependencies
 #============================================================
 
-if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
-    echo "🔧 Since this env contains a 'pkgs-to-install-using-pak.yml' file containing R packages not available on Conda, I will activate the env and install these R packages!"
+if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]] || [[ -f "${TEMP_DIR}/pkgs-to-install-from-source.yml" ]]; then
+    echo "🔧 This env requires R packages installation. I will activate the env and install the packages!"
 
     # Activate env
     activate_conda_env ${ENV_NAME}
 
-    # Configure LD_LIBRARY_PATH and PKG_CONFIG_PATH and restart env
+    # Configure LD_LIBRARY_PATH and PKG_CONFIG_PATH for Conda env
+    echo "  🔧 Configuring LD_LIBRARY_PATH and PKG_CONFIG_PATH for conda env..."
     conda env config vars set LD_LIBRARY_PATH=$CONDA_PREFIX/lib
     conda env config vars set PKG_CONFIG_PATH=$CONDA_PREFIX/lib/pkgconfig
+    echo "  🔧 Restarting conda env..."
     deactivate_conda_env
     activate_conda_env ${ENV_NAME}
     
     # Check if R is installed
     check_r_installation
 
-    # Since this env has R packages to be installed using pak, we need to
-    # ... open "config" file downloaded to check if we need to install "pak"
-    # ... package from source.
-    if grep -q "installation_mode=2" ${TEMP_DIR}/config; then
-        echo "This environment requires to install some packages from source. Installing..."
-        
-        echo "   ..."
-        echo "  🔧 Running sh script before install R packages from source..."
-        source ${TEMP_DIR}/run-before-install-from-source.sh
-        echo "   ..."
-
-        echo "   ..."
+    # If 'pkgs-to-install-from-source.yml' file is defined, install these
+    # ...R packages from source
+    if [[ -f "${TEMP_DIR}/pkgs-to-install-from-source.yml" ]]; then
+        echo "  🔧 This env contains a 'pkgs-to-install-from-source.yml' file. These packages will be installed from source using install.packages() function."
         echo "  🔧 Running script 'install_source.R'..."
         Rscript ${TEMP_DIR}/install_source.R "${TEMP_DIR}/pkgs-to-install-from-source.yml"
         echo "   ..."
     fi
 
-    echo "   ..."
-    echo "  🔧 Running script 'install_pak.R'..."
-    Rscript ${TEMP_DIR}/install_pak.R "${TEMP_DIR}/pkgs-to-install-using-pak.yml"
-    echo "   ..."
-    
+    # If 'pkgs-to-install-using-pak.yml' file is defined, install these
+    # ...R packages using pak
+    if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
+        echo "  🔧 This env contains a 'pkgs-to-install-using-pak.yml' file. These packages will be installed using pak package."
+        echo "  🔧 Running script 'install_pak.R'..."
+        Rscript ${TEMP_DIR}/install_pak.R "${TEMP_DIR}/pkgs-to-install-using-pak.yml"
+        echo "   ..."
+    fi
+        
     # Deactivate env
     deactivate_conda_env
 fi
