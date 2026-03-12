@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.5
+VERSION=1.0.6
 
 #============================================================
 # Input parameters
@@ -43,7 +43,7 @@ done
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Envs files (not all are required)
-ENV_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config")
+ENV_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config" "run-before-install-from-source.sh")
 
 # Tool scripts
 TOOL_AVAILABLE_SCRIPTS=("install_pak.R" "install_source.R")
@@ -152,14 +152,8 @@ check_curl_installation() {
     fi
 }
 
-# Function to be triggered in case of any error
-clean() {
-    clean_tmp_folder
-    aborting_installation
-}
-
 # Register function to run in case of any error
-trap clean ERR
+trap aborting_installation ERR
 
 
 #============================================================
@@ -319,6 +313,11 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
     if grep -q "installation_mode=2" ${TEMP_DIR}/config; then
         echo "This environment requires to install some packages from source. Installing..."
         
+        echo "   ..."
+        echo "  🔧 Running sh script before install R packages from source..."
+        ./${TEMP_DIR}/run-before-install-from-source.sh
+        echo "   ..."
+
         echo "   ..."
         echo "  🔧 Running script 'install_source.R'..."
         Rscript ${TEMP_DIR}/install_source.R "${TEMP_DIR}/pkgs-to-install-from-source.yml"

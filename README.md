@@ -21,7 +21,7 @@ Setting up computational environments for scientific work often involves complex
 ## 🚀 Quickstart
 
 ```bash
-bash <(wget --no-cache -qO- https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh)
+bash <(wget -qO- "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh?$(date +%s)")
 ```
 
 if you are running locally, please use the following command:
