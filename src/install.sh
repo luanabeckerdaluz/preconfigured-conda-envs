@@ -280,6 +280,11 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
 
     # Activate env
     activate_conda_env ${ENV_NAME}
+
+    # Configure LD_LIBRARY_PATH and restart env
+    conda env config vars set LD_LIBRARY_PATH=$CONDA_PREFIX/lib
+    deactivate_conda_env
+    activate_conda_env ${ENV_NAME}
     
     # Check if R is installed
     check_r_installation
