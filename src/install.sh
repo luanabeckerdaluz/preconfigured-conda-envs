@@ -198,6 +198,7 @@ ENV_NAME="${ENV_NAMES[$index]}"
 REMOTE_ENV_NAME=${ENV_NAME}
 # Confirm
 read -p "❓ You chose '${ENV_NAME}'. Confirm installation? (y/n): " confirm
+confirm=${confirm:-Y}  # Consider Enter as 'Y'
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
 
 # Check local env name
@@ -211,6 +212,7 @@ if [ ! -z "$NEW_CONDA_ENV_NAME" ]; then
 
     # Confirm
     read -p "❓ You named your conda env as '${NEW_CONDA_ENV_NAME}'. Confirm? (y/n): " confirm
+    confirm=${confirm:-Y}  # Consider Enter as 'Y'
     if [[ ! "$confirm" =~ ^[Yy]$ ]]; then aborting_installation; fi;
     
     ENV_NAME=$NEW_CONDA_ENV_NAME
@@ -315,7 +317,7 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
         
         echo "   ..."
         echo "  🔧 Running sh script before install R packages from source..."
-        ./${TEMP_DIR}/run-before-install-from-source.sh
+        .${TEMP_DIR}/run-before-install-from-source.sh
         echo "   ..."
 
         echo "   ..."
