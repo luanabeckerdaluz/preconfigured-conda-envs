@@ -2,7 +2,7 @@
 
 set -eu  # Interrompe em caso de erro
 
-VERSION=1.0.0
+VERSION=1.0.1
 
 #============================================================
 # Input parameters
@@ -43,7 +43,7 @@ done
 TEMP_DIR="/tmp/conda_env_$$"
 
 # Possible files inside remote env folders
-REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "config")
+REMOTE_AVAILABLE_FILES=("environment.yml" "pkgs-to-install-using-pak.yml" "pkgs-to-install-from-source.yml" "config")
 
 # Available envs
 ENV_NAMES=("r-geo" "py-geo" "apsim-v1", "apsim-debian-bullseye")
@@ -307,17 +307,25 @@ if [[ -f "${TEMP_DIR}/pkgs-to-install-using-pak.yml" ]]; then
     # ... open "config" file downloaded to check if we need to install "pak"
     # ... package from source.
     if grep -q "installation_mode=2" ${TEMP_DIR}/config; then
-        echo "This environment requires to install R pak from source. Installing..."
-        Rscript -e 'install.packages("pak", repos = "https://cloud.r-project.org")'
+        echo "This environment requires to install some packages from source. Installing..."
+        
+        echo "   ..."
+        echo "  📥 Retrieving 'install_source.R' script..."
+        retrieve_file "src" "install_source.R" ${TEMP_DIR}
+
+        echo "   ..."
+        echo "  🔧 Running script 'install_source.R'..."
+        Rscript ${TEMP_DIR}/install_source.R "${TEMP_DIR}/pkgs-to-install-from-source.yml"
+        echo "   ..."
     fi
 
     echo "   ..."
-    echo "  📥 Retrieving 'install.R' script..."
-    retrieve_file "src" "install.R" ${TEMP_DIR}
+    echo "  📥 Retrieving 'install_pak.R' script..."
+    retrieve_file "src" "install_pak.R" ${TEMP_DIR}
 
     echo "   ..."
-    echo "  🔧 Running script 'install.R'..."
-    Rscript ${TEMP_DIR}/install.R "${TEMP_DIR}/pkgs-to-install-using-pak.yml"
+    echo "  🔧 Running script 'install_pak.R'..."
+    Rscript ${TEMP_DIR}/install_pak.R "${TEMP_DIR}/pkgs-to-install-using-pak.yml"
     echo "   ..."
     
     # Deactivate env

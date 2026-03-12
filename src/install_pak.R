@@ -2,6 +2,11 @@
 #!/usr/bin/env Rscript
 
 #============================================================
+# Usage
+#     Rscript install_pak.R ../pkgs-to-install-using-pak.yml
+#============================================================
+
+#============================================================
 # Detect OS to set PAK repo
 #============================================================
 
@@ -57,15 +62,17 @@ if (length(args) < 1 || is.na(args[1]) || args[1] == "") {
 r_yml_requirements_filepath <- args[1]
 cat("📦 r_yml_requirements_filepath:", r_yml_requirements_filepath, "\n")
 
-
 #============================================================
-# Install R packages not available on conda
+# Parse packages list
 #============================================================
 
-# Parse 'r-packages-not-on-conda.yml' file (No need to use 'yaml' package)
+# Parse 'pkgs-to-install-from-source.yml' file (No need to use 'yaml' package)
 lines <- readLines(r_yml_requirements_filepath, warn = FALSE)
 lines <- lines[lines != ""]
 pkgs <- gsub("^- ", "", lines)
 
-# Install packages using pak
+#============================================================
+# Install R packages using pak
+#============================================================
+
 pak::pkg_install(pkgs)
