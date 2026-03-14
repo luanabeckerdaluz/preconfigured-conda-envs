@@ -12,6 +12,8 @@ dependencies:
   - xorg-libx11
   - libxslt
   - pandoc
+  - nano
+  - htop
   - python=3.11.14
   - ipykernel=7.2.0
   - salib=1.5.2

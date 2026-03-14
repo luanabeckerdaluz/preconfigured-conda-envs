@@ -1,3 +1,6 @@
+- reticulate
+- uuid
+- IRkernel
 - pak
 - stringi
 - nlme
