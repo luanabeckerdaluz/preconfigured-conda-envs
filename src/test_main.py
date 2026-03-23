@@ -2,6 +2,9 @@
 """
 Script para instalação de ambientes conda pré-configurados
 Equivalente em Python ao script bash original
+
+Command:
+    - python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/test_main.py") "$@"
 """
 
 import os
