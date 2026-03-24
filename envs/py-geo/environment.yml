@@ -13,4 +13,8 @@ dependencies:
   - rasterio
   - numpy
   - gdal
+  - geopandas
+  - pandas
+  - shapely
+  - pyproj
   - pydantic
