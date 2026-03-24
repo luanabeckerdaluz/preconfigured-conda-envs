@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""
-Script para instalação de ambientes conda pré-configurados
-Equivalente em Python ao script bash original
-
-Command:
-    - python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/test_main.py") "$@"
-"""
 
 import os
 import re
@@ -17,7 +10,7 @@ import urllib.request
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-VERSION = "1.0.10"
+VERSION = "1.0.11"
 
 # Configurações do GitHub
 GITHUB_USER = "luanabeckerdaluz"
@@ -75,8 +68,8 @@ class CondaEnvInstaller:
                 raise
             return None
     
-    def curl_without_cache(self, url: str, output_path: str) -> bool:
-        """Download de arquivo com curl (sem cache)"""
+    def retrieve_without_cache(self, url: str, output_path: str) -> bool:
+        """Download de arquivo (sem cache)"""
         try:
             req = urllib.request.Request(
                 url,
@@ -111,7 +104,7 @@ class CondaEnvInstaller:
         else:
             url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{env_path_from_root}/{filename}"
             print(f"  📥 Downloading {filename} into folder {dest_dir}...")
-            return self.curl_without_cache(url, dest_path)
+            return self.retrieve_without_cache(url, dest_path)
     
     def check_conda_installation(self) -> None:
         """Verifica se conda está instalado"""
@@ -119,13 +112,6 @@ class CondaEnvInstaller:
             self.error_message("Conda not found. Please, install miniconda from 'https://www.anaconda.com/docs/getting-started/miniconda'")
             self.abort_installation()
         print("✅ Conda found!")
-    
-    def check_curl_installation(self) -> None:
-        """Verifica se curl está instalado"""
-        if shutil.which("curl") is None:
-            self.error_message("curl not found. Please, install curl from apt or conda")
-            self.abort_installation()
-        print("✅ curl found!")
     
     def check_r_installation(self) -> None:
         """Verifica se R está instalado no ambiente conda"""
@@ -232,6 +218,7 @@ class CondaEnvInstaller:
             if not choice.isdigit():
                 self.abort_installation()
             
+            # Check if choice is out of bounds
             idx = int(choice) - 1
             if idx < 0 or idx >= len(ENV_NAMES):
                 self.abort_installation()
@@ -239,7 +226,7 @@ class CondaEnvInstaller:
             self.remote_env_name = ENV_NAMES[idx]
             self.env_name = self.remote_env_name
             
-            # Confirmar
+            # Confirm
             confirm = input(f"❓ You chose '{self.env_name}'. Confirm installation? (y/n): ").strip().lower()
             if confirm not in ['y', 'yes', '']:
                 self.abort_installation()
@@ -265,10 +252,6 @@ class CondaEnvInstaller:
         
         # Verificar pré-requisitos
         self.check_conda_installation()
-        
-        # curl é opcional para modo local
-        if not self.use_local:
-            self.check_curl_installation()
         
         # Selecionar ambiente
         self.select_environment()

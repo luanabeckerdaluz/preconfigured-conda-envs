@@ -14,25 +14,50 @@ Setting up computational environments for scientific work often involves complex
 |-------------|-------------|
 | **`r-geo`** | R with tidyverse, sf, terra, raster, and geospatial analysis packages |
 | **`py-geo`** | Python with geopandas, shapely, rasterio, pyproj and geospatial analysis packages |
-| **`apsim`** | R environment with apsimx, rapsimng, CroptimizR and Python SALib |
+| **`apsim-v1`** | R environment with apsimx, rapsimng, CroptimizR and Python SALib |
+| **`apsim-debian-bullseye`** | Specific environment installing R packages from source |
 
 ---
 
+## 🔧 Pre requisites
+
+This script requires Conda and Python commands. Thus, you can install miniconda:
+
+- 🪟 Windows: https://www.anaconda.com/docs/getting-started/miniconda/install/windows-gui-install
+- 🐧 Linux: https://www.anaconda.com/docs/getting-started/miniconda/install#linux-terminal-installer
+- 🍎 macOS: ??????????????
+??????????????
+??????????????
+??????????????
+??????????????
+
+
 ## 🚀 Quickstart
+
+### 🪟 Windows
+
+Run the following command inside `Anaconda Prompt`, which has access to `conda` and `python` commands:
 
 ```bash
 bash <(wget -qO- "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh?$(date +%s)")
 ```
 
-if you are running locally, please use the following command:
+### 🐧 Linux
+
+Run the following command inside any terminal which has access to `conda` and `python` commands:
 
 ```bash
-cd src/
-install.sh --local
+python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/test_main.py") "$@"
+
+or
+
+bash <(wget -qO- "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/install.sh?$(date +%s)")
 ```
 
-**📌 NOTE:**
+### 🍎 macOS
 
-- ✅ Linux
-- 🚧 Windows: Not tested yet. This script will not run on **CMD/PowerShell**. Please, try to run using **Git Bash** or **WSL (Windows Subsystem for Linux)**.
-- 🚧 macOS: Not tested yet. Please, install **wget** before running quickstart command.
+🚧 Not tested yet! 🚧 Maybe you can run using the following command:
+
+```bash
+python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/test_main.py") "$@"
+```
