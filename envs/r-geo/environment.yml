@@ -6,3 +6,7 @@ dependencies:
   - r-essentials
   - r-devtools
   - r-remotes
+  - r-sf
+  - r-tidyverse
+  - r-terra
+  - r-raster
