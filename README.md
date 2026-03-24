@@ -37,7 +37,7 @@ This script requires Conda and Python commands. Thus, you can install miniconda:
 Run the following command inside any terminal which has access to `conda` and `python` commands:
 
 ```bash
-python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
+python3 <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
 ```
 
 ### 🪟 Windows
@@ -50,10 +50,10 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/luanabeckerdaluz/preco
 python3 "$env:TEMP\main.py"
 
 # WLS
-wsl python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
+wsl python3 <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
 
 # Git Bash
-python3 -i <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
+python3 <(curl -sSL "https://raw.githubusercontent.com/luanabeckerdaluz/preconfigured-conda-envs/main/src/main.py") "$@"
 ```
 
 ### 🍎 macOS
