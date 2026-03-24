@@ -24,14 +24,15 @@ ENV_AVAILABLE_FILES = ["environment.yml", "pkgs-to-install-using-pak.yml", "pkgs
 TOOL_AVAILABLE_SCRIPTS = ["install_pak.R", "install_source.R"]
 
 # Ambientes disponíveis
-ENV_NAMES = ["r-geo", "py-geo", "apsim-v1", "apsim-debian-bullseye"]
+ENV_NAMES = ["local", "r-geo", "py-geo", "apsim-v1", "apsim-debian-bullseye"]
 
 
 class CondaEnvInstaller:
     """Instalador de ambientes conda pré-configurados"""
     
-    def __init__(self, use_local=False):
-        self.use_local = use_local
+    def __init__(self):
+        self.use_local = False
+        self.local_path = None
         self.temp_dir = None
         self.env_name = None
         self.remote_env_name = None
@@ -89,20 +90,20 @@ class CondaEnvInstaller:
                 return False
             raise
     
-    def retrieve_file(self, env_path_from_root: str, filename: str, dest_dir: str) -> bool:
-        """Recupera arquivo (local ou remoto)"""
+    def retrieve_file(self, github_env_path_from_root_or_localpath: str, filename: str, dest_dir: str, use_local = False) -> bool:
+        """Retrieve file (Copy local ou download remote)"""
         dest_path = os.path.join(dest_dir, filename)
         
-        if self.use_local:
-            print(f"  📥 Copying {filename} to folder {dest_dir}...")
-            source_path = os.path.join("..", env_path_from_root, filename)
+        if use_local:
+            print(f"  📥 Copying {filename} from folder {github_env_path_from_root_or_localpath} to folder {dest_dir}...")
+            source_path = os.path.join(github_env_path_from_root_or_localpath, filename)
             try:
                 shutil.copy2(source_path, dest_path)
                 return True
             except FileNotFoundError:
                 return False
         else:
-            url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{env_path_from_root}/{filename}"
+            url = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_env_path_from_root_or_localpath}/{filename}"
             print(f"  📥 Downloading {filename} into folder {dest_dir}...")
             return self.retrieve_without_cache(url, dest_path)
     
@@ -200,7 +201,26 @@ class CondaEnvInstaller:
                 pak_file
             ])
             print("   ...")
-    
+
+    def validate_local_env_folder(self, path: str) -> None:
+        """Check if folder contains exactly the required files"""
+        if not os.path.isdir(path):
+            self.error_message(f"Not a directory: {path}. Use as example the current directory: {os.getcwd()}")
+            self.abort_installation()
+        
+        files = {f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))}
+        
+        # Check 1: Must have environment.yml
+        if "environment.yml" not in files:
+            self.error_message("Missing required file: environment.yml")
+            self.abort_installation()
+
+        # Check 2: All files must be in ENV_AVAILABLE_FILES (no unexpected files)
+        unexpected = [f for f in files if f not in ENV_AVAILABLE_FILES]
+        if unexpected:
+            self.error_message(f"Unexpected file(s) found. Please remove the following files or move to a subfolder: {unexpected}")
+            self.abort_installation()
+
     def select_environment(self) -> None:
         """Menu de seleção de ambiente"""
         print("-" * 41)
@@ -230,8 +250,20 @@ class CondaEnvInstaller:
             confirm = input(f"❓ You chose '{self.env_name}'. Confirm installation? (y/n): ").strip().lower()
             if confirm not in ['y', 'yes', '']:
                 self.abort_installation()
-            
-            # Verificar nome personalizado
+
+            # If env is local, get local path where env is located
+            if self.env_name == "local":
+                # Use local
+                self.use_local = True
+                # Ask local folder path and then filter string
+                local_path = input(f"❓ Local folder path: (example: /home/jovyan/myenv): ").strip()
+                local_path = local_path.strip('"').strip("'")
+                local_path = os.path.expanduser(local_path)
+                # Validate folder files
+                self.validate_local_env_folder(local_path)
+                self.local_path = local_path
+
+            # Verify personalized env name
             new_name = input(f"❓ Name your conda env (default: '{self.env_name}'): ").strip()
             if new_name:
                 # Validar nome
@@ -268,21 +300,34 @@ class CondaEnvInstaller:
         try:
             # Recuperar arquivos
             print("📥 Retrieving env files and tool scripts...")
-            
-            env_dir = f"envs/{self.remote_env_name}"
+            github_env_path_from_root_or_localpath = self.local_path if self.use_local else f"envs/{self.remote_env_name}"
             
             # environment.yml (obrigatório)
-            if not self.retrieve_file(env_dir, "environment.yml", self.temp_dir):
+            if not self.retrieve_file(
+                github_env_path_from_root_or_localpath = github_env_path_from_root_or_localpath,
+                filename = "environment.yml",
+                dest_dir = self.temp_dir,
+                use_local = self.use_local
+                ):
                 self.error_message("environment.yml file not found. Please, contact support")
                 self.abort_installation()
             
             # Outros arquivos de ambiente (opcionais)
             for filename in ENV_AVAILABLE_FILES[1:]:
-                self.retrieve_file(env_dir, filename, self.temp_dir)
+                self.retrieve_file(
+                    github_env_path_from_root_or_localpath = github_env_path_from_root_or_localpath, filename = filename, 
+                    dest_dir = self.temp_dir, 
+                    use_local = self.use_local
+                )
             
-            # Scripts de ferramentas (opcionais)
+            # Download tool scripts
             for filename in TOOL_AVAILABLE_SCRIPTS:
-                self.retrieve_file("src", filename, self.temp_dir)
+                self.retrieve_file(
+                    github_env_path_from_root_or_localpath = "src", 
+                    filename = filename, 
+                    dest_dir = self.temp_dir,
+                    use_local=False
+                )
             
             print("✅ Env files and tool scripts retrieved successfully!")
             print("...")
@@ -319,25 +364,20 @@ class CondaEnvInstaller:
 
 def main():
     """Função principal"""
-    use_local = False
-    
-    # Processar argumentos
+    # Process arguments
     args = sys.argv[1:]
     i = 0
     while i < len(args):
         arg = args[i]
-        if arg in ['-l', '--local']:
-            use_local = True
-            print("🔧 Installing Using local files...")
-        elif arg in ['-v', '--version']:
+        if arg in ['-v', '--version']:
             print(f"preconfigured-conda-envs | Version: {VERSION}")
             sys.exit(0)
         else:
-            print(f"❌ ERROR: Invalid parameter '{arg}'! Available parameters are --local and --version")
+            print(f"❌ ERROR: Invalid parameter '{arg}'! Available parameter are only --version")
             sys.exit(1)
         i += 1
     
-    installer = CondaEnvInstaller(use_local=use_local)
+    installer = CondaEnvInstaller()
     installer.run()
 
 
