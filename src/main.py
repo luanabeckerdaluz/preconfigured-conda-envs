@@ -35,6 +35,7 @@ class CondaEnvInstaller:
         self.temp_dir = None
         self.env_name = None
         self.remote_env_name = None
+        self.register_jupyter_kernels = False
         
     def error_message(self, msg: str) -> None:
         """Print error message"""
@@ -113,8 +114,8 @@ class CondaEnvInstaller:
             self.abort_installation()
         print("✅ Conda found!")
     
-    def check_r_installation(self) -> None:
-        """Cehck if R is installed inside created conda env"""
+    def check_r_installation(self) -> bool:
+        """Check if R is installed inside created conda env"""
         print("  🔧 Checking R installation...")
         
         # Use conda run to check R version
@@ -124,11 +125,70 @@ class CondaEnvInstaller:
                 capture_output=True, text=True, check=True
             )
             r_version = result.stdout.split('\n')[0] if result.stdout else "R installed"
-            print(f"  {r_version}")
-            print("  ✅ R is installed in the conda environment!")
+            return True
         except subprocess.CalledProcessError:
-            self.error_message("R is not installed in the conda environment")
-            self.abort_installation()
+            return False
+
+    def check_python_installed(self) -> bool:
+        """Check if Python is installed inside created conda env"""
+        print("  🔧 Checking Python installation...")
+        
+        # Use conda run to check R version
+        try:
+            self.run_command(
+                ["conda", "run", "-n", self.env_name, "python", "--version"],
+                capture_output=True,
+                check=True
+            )
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
+    def register_kernels(self) -> None:
+        """Register Python and R kernels in Jupyter for the conda environment"""
+        print("🔧 Registering Jupyter kernels...")
+        
+        # Register Python kernel only if Python and ipykernel are available
+        if self.check_python_installed():
+            # Get conda prefix path
+            conda_base = self.run_command(["conda", "info", "--base"], capture_output=True)
+            conda_prefix = os.path.join(conda_base.strip(), "envs", self.env_name)
+            
+            python_kernel_name = self.env_name
+            python_display_name = f"Python ({self.env_name})"
+            
+            print(f"  📝 Registering Python kernel: {python_kernel_name}...")
+            try:
+                self.run_command([
+                    "conda", "run", "-n", self.env_name,
+                    "python", "-m", "ipykernel", "install",
+                    "--name", python_kernel_name,
+                    "--prefix", conda_prefix,
+                    "--display-name", python_display_name
+                ])
+            except subprocess.CalledProcessError:
+                self.error_message("ipykernel is not installed in the conda environment. Please add it to the environment.yml file or contact support.")
+                self.abort_installation()
+
+            print(f"  ✅ Python kernel: {python_kernel_name} was registered successfully!")
+        
+        # Register R kernel only if R and IRkernel are available
+        if self.check_r_installation():
+            r_kernel_name = f"{self.env_name}"
+            r_display_name = f"R ({self.env_name})"
+            
+            print(f"  📝 Registering R kernel: {r_display_name}...")
+            try:
+                self.run_command([
+                    "conda", "run", "-n", self.env_name,
+                    "Rscript", "-e",
+                    f"IRkernel::installspec(name='{r_kernel_name}', displayname='{r_display_name}')"
+                ])
+            except subprocess.CalledProcessError:
+                self.error_message("IRkernel is not installed in the conda environment. Please add it to the R packages or contact support.")
+                self.abort_installation()
+
+            print(f"  ✅ R kernel: {r_kernel_name} was registered successfully!")
     
     def check_env_exists(self, env_name: str) -> bool:
         """Check if conda env to be installed already exists"""
@@ -253,6 +313,11 @@ class CondaEnvInstaller:
                 confirm = input(f"❓ You named your conda env as '{new_name}'. Confirm? (y/n): ").strip().lower()
                 if confirm in ['y', 'yes', '']:
                     self.env_name = new_name
+
+            # Register kernels if necessary
+            register_kernels = input(f"❓ Register Jupyter kernels for env '{self.env_name}'? (y/n): ").strip().lower()
+            if register_kernels in ['y', 'yes', '']:
+                self.register_jupyter_kernels = True
                     
         except KeyboardInterrupt:
             print("\n")
@@ -322,11 +387,20 @@ class CondaEnvInstaller:
                 os.path.exists(os.path.join(self.temp_dir, "pkgs-to-install-from-source.yml"))
             )
             if has_r_packages:
-                self.check_r_installation()
+                if not self.check_r_installation():
+                    self.error_message("R is not installed in the conda environment")
+                    self.abort_installation()
+                # If R is installed, install R packages                    
+                print("  ✅ R is installed in the conda environment!")
                 self.install_r_packages(self.temp_dir)
             
             print("...")
+
+            # Register Jupyter Kernels if necessary
+            if self.register_jupyter_kernels:
+                self.register_kernels()
             
+            print("...")
             print("=" * 50)
             print(f"ℹ️  Conda env {self.env_name} configured successfully!")
             print(f"ℹ️  To deactivate: 'conda deactivate'")
