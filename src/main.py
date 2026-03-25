@@ -403,8 +403,11 @@ class CondaEnvInstaller:
             print("...")
             print("=" * 50)
             print(f"ℹ️  Conda env {self.env_name} configured successfully!")
-            print(f"ℹ️  To deactivate: 'conda deactivate'")
             print(f"ℹ️  To activate: 'conda activate {self.env_name}'")
+            print(f"ℹ️  To install conda packages: 'conda install -c conda-forge <package>...'")
+            print(f"ℹ️  To install Python pip packages: 'pip install ...'")
+            print(f"ℹ️  To install R packages: 'Rscript -e \"install.packages(...)\"'")
+            print(f"ℹ️  To deactivate: 'conda deactivate'")
             print(f"ℹ️  To remove: 'conda env remove -n {self.env_name} -y'")
             print("=" * 50)
             
