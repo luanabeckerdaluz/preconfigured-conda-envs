@@ -7,10 +7,9 @@ import subprocess
 import tempfile
 import shutil
 import urllib.request
-from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-VERSION = "1.0.11"
+VERSION = "1.0.12"
 
 # GitHub configs
 GITHUB_USER = "luanabeckerdaluz"
