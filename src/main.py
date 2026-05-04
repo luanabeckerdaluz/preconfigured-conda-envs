@@ -94,10 +94,10 @@ class CondaEnvInstaller:
         dest_path = os.path.join(dest_dir, filename)
         
         if use_local:
-            print(f"  📥 Copying {filename} from folder {github_env_path_from_root_or_localpath} to folder {dest_dir}...")
             source_path = os.path.join(github_env_path_from_root_or_localpath, filename)
             try:
                 shutil.copy2(source_path, dest_path)
+                print(f"  📥 Copied {filename} from folder {github_env_path_from_root_or_localpath} to folder {dest_dir}...")
                 return True
             except FileNotFoundError:
                 return False

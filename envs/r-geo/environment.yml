@@ -1,12 +1,11 @@
 channels:
   - conda-forge
 dependencies:
-  # R
-  - r-base
-  - r-essentials
-  - r-devtools
-  - r-remotes
-  - r-sf
-  - r-tidyverse
-  - r-terra
-  - r-raster
+  - r-base=4.5.3
+  - r-essentials=4.5
+  - r-devtools=2.5.2
+  - r-remotes=2.5.0
+  - r-sf=1.1_0
+  - r-tidyverse=2.0.0
+  - r-terra=1.9_11
+  - r-raster=3.6_32
