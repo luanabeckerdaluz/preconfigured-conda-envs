@@ -32,3 +32,7 @@ dependencies:
   - r-rjson=0.2.23
   - r-stringr=1.6.0
   - r-ggh4x=0.3.1
+  - r-pbapply=1.7.4
+  - r-rcppparallel=5.1.11
+  - r-clue=0.3
+  - r-covr=3.6.5
