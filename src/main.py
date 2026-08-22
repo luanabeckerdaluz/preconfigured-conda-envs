@@ -23,7 +23,7 @@ ENV_AVAILABLE_FILES = ["environment.yml", "pkgs-to-install-using-pak.yml", "pkgs
 TOOL_AVAILABLE_SCRIPTS = ["install_pak.R", "install_source.R"]
 
 # Available environments
-ENV_NAMES = ["local", "r-geo", "py-geo", "apsim-v1", "apsim-debian-bullseye"]
+ENV_NAMES = ["local", "r-geo", "py-geo", "apsim-v1", "apsim-v2", "apsim-debian-bullseye"]
 
 class CondaEnvInstaller:
     """Pre-configured conda envs installer"""
