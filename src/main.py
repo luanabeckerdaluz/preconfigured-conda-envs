@@ -9,7 +9,7 @@ import shutil
 import urllib.request
 from typing import List, Optional
 
-VERSION = "1.0.12"
+VERSION = "1.1"
 
 # GitHub configs
 GITHUB_USER = "luanabeckerdaluz"
@@ -261,9 +261,9 @@ class CondaEnvInstaller:
 
     def select_environment(self) -> None:
         """Initial menu to select environment"""
-        print("-" * 41)
+        print("-" * 45)
         print(f"preconfigured-conda-envs | Version: {VERSION}")
-        print("-" * 41)
+        print("-" * 45)
         print("Select the environment you want to install:")
         print("")
         
