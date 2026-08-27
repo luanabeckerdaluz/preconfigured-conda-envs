@@ -9,7 +9,7 @@ import shutil
 import urllib.request
 from typing import List, Optional
 
-VERSION = "1.1"
+VERSION = "1.1.1"
 
 # GitHub configs
 GITHUB_USER = "luanabeckerdaluz"

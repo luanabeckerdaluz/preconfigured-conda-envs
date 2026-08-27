@@ -9,3 +9,5 @@
 - sensitivity
 - DT
 - htmltools
+- RcppArmadillo
+- RcppThread
